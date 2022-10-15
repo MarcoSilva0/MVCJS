@@ -15,8 +15,11 @@ const flash = require('connect-flash');
 
 const routes = require('./routes');
 const path = require('path');
-const {middlewareGlobal} = require('./src/middlewares/middleware');
+const helmet = require('helmet');
+const csrf = require('csurf');
+const {middlewareGlobal, checkCsrfError, csrfMiddleware} = require('./src/middlewares/middleware');
 
+app.use(helmet());
 app.use(express.urlencoded({extended: true}));
 
 //Setando a pasta de arquivos estáticos CSS, IMG
@@ -40,9 +43,11 @@ app.use(flash());
 app.set('views', path.resolve(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
+app.use(csrf());
 //Setando o middleware global
 app.use(middlewareGlobal);
-
+app.use(checkCsrfError);
+app.use(csrfMiddleware);
 app.use(routes);
 
 app.on('pronto', () => {
