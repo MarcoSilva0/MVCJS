@@ -6,8 +6,12 @@ const mongoose = require('mongoose');
 mongoose.connect(process.env.CONNECTIONSTRING, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => {
         app.emit('pronto');
-    });
+    }).catch(e => console.log(e));
 
+//Biblioteca para trabalhar com sessão
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const flash = require('connect-flash');
 
 const routes = require('./routes');
 const path = require('path');
@@ -17,6 +21,20 @@ app.use(express.urlencoded({extended: true}));
 
 //Setando a pasta de arquivos estáticos CSS, IMG
 app.use(express.static(path.resolve(__dirname, 'public')));
+
+//Configurando as sessões
+const sessionOptions = session({
+    secret: 'sP-p;VpKx5n-h`iw+a+GChd=R%L2BlpN4U/$P~IqP{:KyfT%)LlU5C;/U`~BMoxY',
+    store: MongoStore.create({ mongoUrl: process.env.CONNECTIONSTRING }),
+    resave: false,
+    resaveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        httpOnly: true
+    }
+});
+app.use(sessionOptions);
+app.use(flash());
 
 //Setando a engine e mostrando o caminho da pasta
 app.set('views', path.resolve(__dirname, 'src', 'views'));
